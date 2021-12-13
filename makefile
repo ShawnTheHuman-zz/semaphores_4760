@@ -1,22 +1,32 @@
 # Shawn brown
+# project 3 - 4760
 # makefile
 
-all: runsim testsim
 
-testsim: testsim.o license.o
-	gcc -g -o testsim testsim.o license.o
 
-runsim: runsim.o license.o
-	gcc -g -o runsim runsim.o license.o
+CC      = gcc
+CFLAGS  = -g -Wall -Wshadow
 
-runsim.o: runsim.c
-	gcc -g -c runsim.c
 
-testsim.o: testsim.c
-	gcc -g -c testsim.c
+EXEC1 := runsim
+SRC1 := license.c runsim.c
+OBJ1 := $(patsubst %.cpp, %.o, $(SRC1))
 
-license.o: license.c
-	gcc -g -c license.c
+all: $(EXEC1)
+
+$(EXEC1): $(OBJ1)
+	$(CC) $(CFLAGS) -o $(EXEC1) $(OBJ1)
+
+EXEC2 := testsim
+SRC2 :=  license.c testsim.c
+OBJ2 := $(patsubst %.cpp, %.o, $(SRC2))
+
+all: $(EXEC2)
+
+$(EXEC2): $(OBJ2)
+	$(CC) $(CFLAGS) -o $(EXEC2) $(OBJ2)
+
+.PHONY: clean
 
 clean:
-	rm -rf *.o runsim testsim
+	rm -f $(EXEC1) $(EXEC2) *.o logfile.data
