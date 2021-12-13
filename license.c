@@ -1,6 +1,7 @@
 /*
- * license.c
- *
+	Shawn Brown
+	project 3 - 4760
+	license.c
  */
 
 #include "config.h"
@@ -51,11 +52,9 @@ void logmsg ( char* pid, char* c, char* r ) {
         exit(1);
     }
 
-    
-
     print_time(out);
 
-    fprintf(out, "%s %s of %s\n", pid, c, r);
+    fprintf(out, "PID: %s: %s of %s\n", pid, c, r);
 
     fclose(out);
 
@@ -67,6 +66,6 @@ void print_time(FILE* out){
 
     struct tm *tp = localtime(&tm);
 
-    fprintf(out, "%.2d:%.2d:%.2d ", tp->tm_hour, tp->tm_min, tp->tm_sec);
+    fprintf(out, "Time: %.2d:%.2d:%.2d ", tp->tm_hour, tp->tm_min, tp->tm_sec);
 
 }

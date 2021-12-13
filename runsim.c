@@ -1,94 +1,273 @@
 /*
- * testsim.c
+	Shawn Brown
+	Project 3 - 4760
+	runsim.c
  */
 
+
 #include <stdio.h>
-#include <string.h>
-#include <signal.h>
+#include <stdlib.h>
 #include <unistd.h>
-#include <sys/types.h>
-#include <sys/ipc.h>
+#include <string.h>
 #include <sys/shm.h>
+#include <sys/wait.h>
+#include <sys/ipc.h>
+#include <signal.h>
+#include <ctype.h>
+
 #include "config.h"
 
+
+/* forward declarations  */
+void docommand( char* prog, char* name, char* arr1, char* arr2, char* arr3);
+char** make_argv(char* str);
+void terminate_processes();
+void signal_handler();
+void usage();
 
 
 int shmid;
 struct nLicenses *shm;
 
-int main ( int argc, char *argv[] ) {
 
+
+int main(int argc, char* argv[]){
+	
+	/* initiate signal handler */ 
 	signal(SIGINT, signal_handler);
-	int repeat_factor, sleep_time, i;
 
-	if ( argc != 3 ) {
-		perror("ERROR: testsim:  invalid number of arguments");
-		return 1; 
+	int license_count;
+	int child_count = 0;
+	
+	key_t SHMKEY = ftok("./", 'R'); // key for shared memory
+
+	if( argc != 2 ) {
+		
+		perror("ERROR: runsim: invalid arguments\n");
+		usage();
+		exit(1);
+
 	}
-	
-	repeat_factor = atoi(argv[2]);
-	sleep_time = atoi(argv[1]);
-	
 
-
-	if((shmid = shmget(SHMKEY, sizeof(struct nLicenses) * 2, 0666)) < 0) {
-		perror("testsim: Error: shmget ");
+	/* checks that n is a digit, then sets license count to the number */	
+	if(strspn(argv[1], "0123456789") == strlen(argv[1])){
+		license_count = atoi(argv[1]);
+		if( license_count <= 0 ){
+			perror("ERROR: runsim: n must be a number greating than zero\n");
+			usage();
+			exit(1);
+		}
+	}
+	else{
+		perror("ERROR: runsim: Invalid argument\n");
+		usage();
 		exit(1);
 	}
-
-	if((shm = (struct nLicenses *)shmat(shmid, NULL, 0)) == (struct nLicenses *) -1) {
-		perror("testsim: Error: shmat ");
+	/* get shared memory id */
+	if(( shmid = shmget(SHMKEY, sizeof(struct nLicenses)*2, 0666 | IPC_CREAT )) < 0 ) {
+		perror("ERROR: runsim: error getting memory");
 		exit(1);
 	}
-
-
-	int c, j, k, n = shm->children;
-	int max = 0;
-	shm->choosing[(n-1)] = 1;
-
-	/*
-		Implementation of the Bakery algorithm
-	*/
-
-	for(c = 0 ; c < repeat_factor; c++) {
-		if((shm->turn[c]) > max) {
-			max = (shm->turn[c]);
-		}
-		shm->turn[(n-1)] = 1 + max;
-
-		shm->choosing[(n-1)] = 0;
-		for(j = 0 ; j < n ; j++) {
-			while(shm->choosing[j] == 1) {}
-				while((shm->turn[j] != 0) && (shm->turn[j] < shm->turn[(n-1)])) {}
-		}
-		/* CRITICAL SECTION */
-		pid_t id = getpid();
-		char pid[50];
-		char num[50];
-	
-		sprintf(pid, "%d", id);
-		sprintf(num, "%d", (c + 1));
-
-		printf("Printing msg to file: %s %s of %s\n", pid, num, argv[2]);
-
-		/* prints log to file */ 
-		logmsg(pid, num, argv[2]);
-
-		sleep(sleep_time);
-
-		shm->turn[(n - 1)] = 0;
+	/* attach data to shared memory */
+	if( (shm = (struct nLicenses *)shmat(shmid, NULL, 0)) == ((struct nLicenses *)(-1)) ) {
+		perror("ERROR: runsim: unable to attach memory");
+		exit(1);
 
 	}
-	/* adding to licenses and detaching shared memory */
-	addtolicenses(1);
-	shmdt(shm);
+
+	shm->available = license_count;
+	shm->proc_running++;
+
+	/* initiate license  */
+	initlicense();
+
+	/* data buffer array */
+	char buf[MAX_CANON];
+
+	/* 2d array for storing data from the file */
+	char lines[BUFFER][BUFFER];
+
+	int i,j = 0;
+
+	/* arrays to store the arguments read in from the file */
+	char prog_name[50] = "./";
+	char sleep_arr[50];
+	char repeat_arr[50];
+
+
+	/* reads data from command line */
+	while(fgets(buf, MAX_CANON, stdin) != NULL){
+		strcpy(lines[child_count], buf);
+		child_count++;
+	}
+
+	shm->children = child_count;
+
+	int term_time = 20;
+	int proc_running = 0;
+
+	int index = 0;
+
+	pid_t pid, child[child_count];
+
+	while(term_time > 0){
+		if(proc_running < 20){
+			while(getlicense() == 1){
+				if(license_count == 1){
+					term_time--;
+					sleep(1);
+
+					if(term_time < 0){
+						perror("ERROR: runsim ran out of time. aborting all processes\n");
+						signal_handler();
+						exit(1);
+					}
+				}
+			}
+			if(index < child_count){
+				/*
+					for loops that read in the arguments the do_command function
+					it reads until the first space, storing the contents in the program
+					name array, then the same for the sleep and repeat factors in respective arrays. 
+				 
+				*/
+				for( i; lines[index][i] != ' '; i++){
+					prog_name[i + 2] = lines[index][i];
+				}
+
+				i++;
+
+				for( i; lines[index][i] != ' '; i++ ){
+					sleep_arr[j] = lines[index][i];
+					//printf("sleep factor %d\n", sleep_arr[j]);
+					j++;
+				}
+
+				j = 0;
+				i++;
+
+				for( i; i < strlen(lines[index]) - 1; i++){
+
+					repeat_arr[j] = lines[index][i];
+					//printf("repeat factor %d\n", repeat_arr[j]);
+					j++;
+				}
+
+				i = 0;
+				j = 0;
+
+				removelicenses(1);
+
+				pid = fork();
+
+				child[index] = pid;
+
+				proc_running++;
+
+				shm->proc_running++;
+
+				printf("RUNSIM: running process: %i\n", shm->proc_running);
+				index++;
+			}
+			if(pid == -1){
+				perror("RUNSIM: fork error");
+				terminate_processes();
+				exit(1);
+
+			}
+			else if(pid == 0){
+				char ch[50];
+				sprintf(ch, "%d", index);
+				//printf(" RUNNING TESTSIM\n");
+
+				//execl(prog_name, "testsim", sleep_arr, repeat_arr, ch,(char *)NULL);
+				docommand(prog_name, "testsim", sleep_arr, repeat_arr, ch);
+			}
+			term_time--;
+			sleep(1);
+		}
+		else{
+			perror("ERROR: runsim: exceeded process limit. aborting");
+			signal_handler();
+			exit(1);
+			
+		}
+		shm->proc_running--;
+		int verify = procs_remaining(child, child_count);
+		if(verify == 1){
+			break;
+		}
+
+	}
+
+	if((wait(NULL) > 0) && (shm->children) != 0){
+		perror("ERROR: runsim: exceeded maximum time. aborting.");
+		terminate_processes();
+	}
+
 	return 0;
 
 }
 
-void signal_handler(int s){
-	pid_t id = getpid();
+void usage(){
+	printf("./runsim n < testing.data -- where n is an integer number of licenses");
+}
+/* simple function that just takes arguments to exec */
+void docommand( char* prog, char* name, char* arr1, char* arr2, char* c){
+	execl(prog, "testsim", arr1, arr2, c,(char *)NULL);
+}
+/* removes shared memory */
+void terminate_processes(){
+	shmctl(shmid, IPC_RMID, NULL);
 	shmdt(shm);
+}
+/* unuti tokenizes input to make argument array */
+char** make_argv( char* str ){
+	
+	char* substr;
+	char** _argv = malloc(10 * sizeof(char));
+
+	substr = strtok(str, " ");
+
+	int i = 0;
+	while( substr != NULL){
+		_argv[i] = malloc(20 * sizeof(char));
+		_argv[i] = substr;
+		substr = strtok(NULL, " ");
+		i++;
+	}
+	_argv[i] = NULL;
+	
+	return _argv;
+}
+
+/* checks if any child processes are still running */
+int procs_remaining(pid_t procs[], int size)
+{
+	int i, status;
+	
+	for(i = 0; i < size; i++){
+		pid_t wait;
+		wait = waitpid(procs[i], &status, WNOHANG);
+		
+		if(wait != 0){
+			procs[i] = 0;
+		}
+	}
+	for(i = 0; i < size; i++){
+		if(procs[i] == 0){
+			continue;
+		}
+		else{ return 0;}
+	}
+	return 1;
+}
+
+void signal_handler(int s){
+
+	printf("Killed with manual interrupt.\n");
+	pid_t id = getpgrp();
+	terminate_processes();
 	killpg(id, SIGINT);
 	exit(1);
 
