@@ -4,7 +4,7 @@
 
 
 
-CC      = gcc
+CC      = g++
 CFLAGS  = -g -Wall -Wshadow
 
 
