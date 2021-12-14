@@ -91,11 +91,11 @@ int main ( int argc, char *argv[] ) {
 
 		/* prints log to file */ 
 		logmsg(pid, num, argv[2]);
-		s.Signal();
+		
 		sleep(sleep_time);
-
+		
 		shm->turn[(n - 1)] = 0;
-
+		s.Signal();
 	}
 	/* adding to licenses and detaching shared memory */
 	addtolicenses(1);
