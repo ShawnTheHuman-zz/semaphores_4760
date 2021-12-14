@@ -70,8 +70,7 @@ int main(int argc, char* argv[]){
 						perror("Unknown option character");
 					}
 					return EXIT_FAILURE;
-				default:    // An bad input parameter was entered
-					// Show error because a bad option was found
+				default:   
 					perror ("Error: Runsim: Illegal option found");
 					usage();
 					return EXIT_FAILURE;
