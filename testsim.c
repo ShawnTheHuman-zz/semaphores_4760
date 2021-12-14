@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "config.h"
+#include "semaphore.h"
 
 
 
@@ -19,7 +20,9 @@ int main ( int argc, char *argv[] ) {
 	
 	//printf("TEST SIM\n");
 	key_t SHMKEY = ftok("./", 'R'); // key for shared memory
+	key_t SEMKEY = ftok("./config.h", 'X'); // key for semaphore
 	
+	Semaphore s(SEMKEY, true, one);
 
 	signal(SIGINT, signal_handler);
 
@@ -65,6 +68,8 @@ int main ( int argc, char *argv[] ) {
 				while((shm->turn[j] != 0) && (shm->turn[j] < shm->turn[(n-1)])) {}
 		}
 		/* CRITICAL SECTION */
+		s.Wait();
+
 		pid_t id = getpid();
 		char pid[50];
 		char num[50];
@@ -76,7 +81,7 @@ int main ( int argc, char *argv[] ) {
 
 		/* prints log to file */ 
 		logmsg(pid, num, argv[2]);
-
+		s.Signal();
 		sleep(sleep_time);
 
 		shm->turn[(n - 1)] = 0;

@@ -15,7 +15,7 @@
 #include <signal.h>
 #include <ctype.h>
 #include <errno.h>
-
+#include "semaphore.h"
 #include "config.h"
 
 
@@ -44,13 +44,8 @@ int main(int argc, char* argv[]){
 	key_t SHMKEY = ftok("./", 'R'); // key for shared memory
 	key_t SEMKEY = ftok("./config.h", 'X'); // key for semaphore
 
-	// if( argc != 2 ) {
-		
-	// 	perror("ERROR: runsim: invalid arguments\n");
-	// 	usage();
-	// 	exit(1);
 
-	// }
+	Semaphore s(SEMKEY, true, one);
 
 	// /* checks that n is a digit, then sets license count to the number */	
 	if(argc == 4){
@@ -248,7 +243,7 @@ int main(int argc, char* argv[]){
 		perror("ERROR: runsim: exceeded maximum time. aborting.");
 		terminate_processes();
 	}
-
+	s.~Semaphore();
 	return 0;
 
 }
@@ -262,7 +257,8 @@ void docommand( char* prog, char* name, char* arr1, char* arr2, char* c){
 }
 /* removes shared memory */
 void terminate_processes(){
-	shmctl(shmid, IPC_RMID, NULL);
+	shmctl(shmid, IPC_RMID, NULL);\
+	
 	shmdt(shm);
 }
 /* unuti tokenizes input to make argument array */
