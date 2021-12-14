@@ -16,6 +16,15 @@
 int shmid;
 struct nLicenses *shm;
 
+void signal_handler(int s){
+	pid_t id = getpid();
+	shmdt(shm);
+	killpg(id, SIGINT);
+	exit(1);
+
+}
+
+
 int main ( int argc, char *argv[] ) {
 	
 	//printf("TEST SIM\n");
@@ -94,10 +103,3 @@ int main ( int argc, char *argv[] ) {
 
 }
 
-void signal_handler(int s){
-	pid_t id = getpid();
-	shmdt(shm);
-	killpg(id, SIGINT);
-	exit(1);
-
-}
