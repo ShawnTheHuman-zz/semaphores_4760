@@ -38,18 +38,48 @@ int main(int argc, char* argv[]){
 
 	int license_count;
 	int child_count = 0;
+	int max_time = MAX_TIME;
 	
 	key_t SHMKEY = ftok("./", 'R'); // key for shared memory
+	key_t SEMKEY = ftok("./config.h", 'X'); // key for semaphore
 
-	if( argc != 2 ) {
+	// if( argc != 2 ) {
 		
-		perror("ERROR: runsim: invalid arguments\n");
-		usage();
-		exit(1);
+	// 	perror("ERROR: runsim: invalid arguments\n");
+	// 	usage();
+	// 	exit(1);
 
-	}
+	// }
 
-	/* checks that n is a digit, then sets license count to the number */	
+	// /* checks that n is a digit, then sets license count to the number */	
+
+	opterr = 0;
+    while ((opt = getopt(argc, argv, "t:")) != -1) {
+        switch (opt) {
+
+            case 't':
+                max_time = atoi(optarg);
+                break;
+            case '?': // Unknown arguement                
+                if (isprint (optopt))
+                {
+                    errno = EINVAL;
+                    perror("Unknown option");
+                }
+                else
+                {
+                    errno = EINVAL;
+                    perror("Unknown option character");
+                }
+                return EXIT_FAILURE;
+            default:    // An bad input parameter was entered
+                // Show error because a bad option was found
+                perror ("Error: Runsim: Illegal option found");
+                usage();
+                return EXIT_FAILURE;
+        }
+    }
+
 	if(strspn(argv[1], "0123456789") == strlen(argv[1])){
 		license_count = atoi(argv[1]);
 		if( license_count <= 0 ){
@@ -63,6 +93,7 @@ int main(int argc, char* argv[]){
 		usage();
 		exit(1);
 	}
+
 	/* get shared memory id */
 	if(( shmid = shmget(SHMKEY, sizeof(struct nLicenses)*2, 0666 | IPC_CREAT )) < 0 ) {
 		perror("ERROR: runsim: error getting memory");
@@ -103,21 +134,21 @@ int main(int argc, char* argv[]){
 
 	shm->children = child_count;
 
-	int term_time = 20;
+	
 	int proc_running = 0;
 
 	int index = 0;
 
 	pid_t pid, child[child_count];
 
-	while(term_time > 0){
+	while(max_time > 0){
 		if(proc_running < 20){
 			while(getlicense() == 1){
 				if(license_count == 1){
-					term_time--;
+					max_time--;
 					sleep(1);
 
-					if(term_time < 0){
+					if(max_time < 0){
 						perror("ERROR: runsim ran out of time. aborting all processes\n");
 						signal_handler();
 						exit(1);
@@ -183,7 +214,7 @@ int main(int argc, char* argv[]){
 				//execl(prog_name, "testsim", sleep_arr, repeat_arr, ch,(char *)NULL);
 				docommand(prog_name, "testsim", sleep_arr, repeat_arr, ch);
 			}
-			term_time--;
+			max_time--;
 			sleep(1);
 		}
 		else{
@@ -210,7 +241,7 @@ int main(int argc, char* argv[]){
 }
 
 void usage(){
-	printf("./runsim n < testing.data -- where n is an integer number of licenses");
+	printf("./runsim [ -t secs ] n < testing.data -- where n is an integer number of licenses");
 }
 /* simple function that just takes arguments to exec */
 void docommand( char* prog, char* name, char* arr1, char* arr2, char* c){
@@ -265,7 +296,7 @@ int procs_remaining(pid_t procs[], int size)
 
 void signal_handler(int s){
 
-	printf("Killed with manual interrupt.\n");
+	printf("\nKilled with manual interrupt.\n");
 	pid_t id = getpgrp();
 	terminate_processes();
 	killpg(id, SIGINT);

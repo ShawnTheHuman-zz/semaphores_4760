@@ -1,3 +1,8 @@
+/*
+	Shawn Brown
+	Project 3 - 4760
+	semaphore.c
+ */
 
 
 #include <sys/sem.h>

@@ -1,4 +1,8 @@
-
+/*
+	Shawn Brown
+	Project 3 - 4760
+	semaphore.h
+ */
 #ifndef SEMAPHORE
 #define SEMAPHORE
 
