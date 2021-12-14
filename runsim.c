@@ -56,7 +56,7 @@ int main(int argc, char* argv[]){
 
 	int opterr = 0;
 	int opt;
-    while ((opt = getopt(argc, argv, ":t")) != -1) {
+    while ((opt = getopt(argc, argv, "t:")) != -1) {
         switch (opt) {
 
             case 't':
@@ -82,7 +82,7 @@ int main(int argc, char* argv[]){
         }
     }
 
-	if(strspn(argv[3], "0123456789") == strlen(argv[3])){
+	if(strspn(argv[4], "0123456789") == strlen(argv[4])){
 		license_count = atoi(argv[3]);
 		if( license_count <= 0 ){
 			perror("ERROR: runsim: n must be a number greating than zero\n");
