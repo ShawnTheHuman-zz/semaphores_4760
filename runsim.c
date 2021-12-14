@@ -159,7 +159,7 @@ int main(int argc, char* argv[]){
 
 					if(max_time < 0){
 						perror("ERROR: runsim ran out of time. aborting all processes\n");
-						signal_handler();
+						//signal_handler(SIGQUIT);
 						exit(1);
 					}
 				}
