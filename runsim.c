@@ -24,7 +24,7 @@ void docommand( char* prog, char* name, char* arr1, char* arr2, char* arr3);
 char** make_argv(char* str);
 int procs_remaining(pid_t [], int);
 void terminate_processes();
-void signal_handler();
+void signal_handler(int s);
 void usage();
 
 
@@ -158,7 +158,7 @@ int main(int argc, char* argv[]){
 
 					if(max_time < 0){
 						perror("ERROR: runsim ran out of time. aborting all processes\n");
-						//signal_handler(SIGQUIT);
+					
 						exit(1);
 					}
 				}
@@ -227,7 +227,7 @@ int main(int argc, char* argv[]){
 		}
 		else{
 			perror("ERROR: runsim: exceeded process limit. aborting");
-			signal_handler();
+			
 			exit(1);
 			
 		}
@@ -303,7 +303,7 @@ int procs_remaining(pid_t procs[], int size)
 	return 1;
 }
 
-void signal_handler(){
+void signal_handler(int s){
 
 	printf("\nKilled with manual interrupt.\n");
 	pid_t id = getpgrp();
