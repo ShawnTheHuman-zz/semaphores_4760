@@ -53,45 +53,56 @@ int main(int argc, char* argv[]){
 	// }
 
 	// /* checks that n is a digit, then sets license count to the number */	
+	if(argc == 4){
+		int opterr = 0;
+		int opt;
+		while ((opt = getopt(argc, argv, "t:")) != -1) {
+			switch (opt) {
 
-	int opterr = 0;
-	int opt;
-    while ((opt = getopt(argc, argv, "t:")) != -1) {
-        switch (opt) {
-
-            case 't':
-                max_time = atoi(optarg);
-                break;
-            case '?': // Unknown arguement                
-                if (isprint (optopt))
-                {
-                    errno = EINVAL;
-                    perror("Unknown option");
-                }
-                else
-                {
-                    errno = EINVAL;
-                    perror("Unknown option character");
-                }
-                return EXIT_FAILURE;
-            default:    // An bad input parameter was entered
-                // Show error because a bad option was found
-                perror ("Error: Runsim: Illegal option found");
-                usage();
-                return EXIT_FAILURE;
-        }
-    }
-
-	if(strspn(argv[3], "0123456789") == strlen(argv[3])){
-		license_count = atoi(argv[3]);
-		if( license_count <= 0 ){
-			perror("ERROR: runsim: n must be a number greating than zero\n");
-			usage();
-			exit(1);
+				case 't':
+					max_time = atoi(optarg);
+					break;
+				case '?': // Unknown arguement                
+					if (isprint (optopt))
+					{
+						errno = EINVAL;
+						perror("Unknown option");
+					}
+					else
+					{
+						errno = EINVAL;
+						perror("Unknown option character");
+					}
+					return EXIT_FAILURE;
+				default:    // An bad input parameter was entered
+					// Show error because a bad option was found
+					perror ("Error: Runsim: Illegal option found");
+					usage();
+					return EXIT_FAILURE;
+			}
 		}
+
+		if(strspn(argv[3], "0123456789") == strlen(argv[3])){
+			license_count = atoi(argv[3]);
+			if( license_count <= 0 ){
+				perror("ERROR: runsim: n must be a number greating than zero\n");
+				usage();
+				exit(1);
+			}
+		}
+	}else if(argc == 2){
+		if(strspn(argv[1], "0123456789") == strlen(argv[1])){
+			license_count = atoi(argv[1]);
+			if( license_count <= 0 ){
+				perror("ERROR: runsim: n must be a number greating than zero\n");
+				usage();
+				exit(1);
+			}
+		}
+
 	}
 	else{
-		perror("ERROR: runsim: Invalid argument\n");
+		perror("ERROR: runsim: Invalid arguments\n");
 		usage();
 		exit(1);
 	}
