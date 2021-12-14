@@ -24,7 +24,7 @@ void docommand( char* prog, char* name, char* arr1, char* arr2, char* arr3);
 char** make_argv(char* str);
 int procs_remaining(pid_t [], int);
 void terminate_processes();
-void signal_handler(int);
+void signal_handler();
 void usage();
 
 
@@ -303,7 +303,7 @@ int procs_remaining(pid_t procs[], int size)
 	return 1;
 }
 
-void signal_handler(int s){
+void signal_handler(){
 
 	printf("\nKilled with manual interrupt.\n");
 	pid_t id = getpgrp();
