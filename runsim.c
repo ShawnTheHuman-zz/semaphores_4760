@@ -14,6 +14,7 @@
 #include <sys/ipc.h>
 #include <signal.h>
 #include <ctype.h>
+#include <errno.h>
 
 #include "config.h"
 
@@ -53,7 +54,8 @@ int main(int argc, char* argv[]){
 
 	// /* checks that n is a digit, then sets license count to the number */	
 
-	opterr = 0;
+	int opterr = 0;
+	int opt;
     while ((opt = getopt(argc, argv, "t:")) != -1) {
         switch (opt) {
 
