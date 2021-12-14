@@ -22,8 +22,9 @@
 /* forward declarations  */
 void docommand( char* prog, char* name, char* arr1, char* arr2, char* arr3);
 char** make_argv(char* str);
+int procs_remaining(pid_t [], int);
 void terminate_processes();
-void signal_handler();
+void signal_handler(int);
 void usage();
 
 
@@ -45,7 +46,7 @@ int main(int argc, char* argv[]){
 	key_t SEMKEY = ftok("./config.h", 'X'); // key for semaphore
 
 
-	Semaphore s(SEMKEY, true, one);
+	Semaphore s(SEMKEY, true, 1);
 
 	// /* checks that n is a digit, then sets license count to the number */	
 	if(argc == 4){
