@@ -22,7 +22,7 @@ int main ( int argc, char *argv[] ) {
 	key_t SHMKEY = ftok("./", 'R'); // key for shared memory
 	key_t SEMKEY = ftok("./config.h", 'X'); // key for semaphore
 	
-	Semaphore s(SEMKEY, true, one);
+	Semaphore s(SEMKEY, true, 1);
 
 	signal(SIGINT, signal_handler);
 
@@ -94,7 +94,7 @@ int main ( int argc, char *argv[] ) {
 
 }
 
-void signal_handler(){
+void signal_handler(int s){
 	pid_t id = getpid();
 	shmdt(shm);
 	killpg(id, SIGINT);
