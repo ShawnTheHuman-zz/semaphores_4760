@@ -67,7 +67,7 @@ Semaphore::~Semaphore()
 
 void Semaphore::Wait()
 {
-    printf("WAIT");
+    //printf("WAIT");
     sb.sem_num = 0;
     sb.sem_op = -1;
     sb.sem_flg = 0;
@@ -76,7 +76,7 @@ void Semaphore::Wait()
 
 void Semaphore::Signal() 
 {
-    printf("SIGNAL");
+    //printf("SIGNAL");
     sb.sem_num = 0;
     sb.sem_op = 1;
     sb.sem_flg = 0;

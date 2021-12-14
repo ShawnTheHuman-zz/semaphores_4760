@@ -1,0 +1,15 @@
+
+Christopher Brown
+
+Project 3 - 4706
+
+Compiled with "make"
+
+How to Run:
+    ./runsim [ -t sec ] n < testing.data
+
+    n must be an integer greater than zero and '-t sec' is the optional max run time specified by the user. 
+
+
+Issues: 
+    its printing something weird at the end of each log but the other information is correct. 
