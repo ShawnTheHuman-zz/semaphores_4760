@@ -5,7 +5,7 @@
 
 
 CC      = g++
-CFLAGS  = -g -Wall -Wshadow
+CFLAGS  = -g # -Wall -Wshadow
 
 
 EXEC1 := runsim

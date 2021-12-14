@@ -43,7 +43,7 @@ int main ( int argc, char *argv[] ) {
 	
 	sleep_time = atoi(argv[1]);
 	repeat_factor = atoi(argv[2]);
-	i = atoi(argv[3]);
+	
 	
 	//printf("sleep time %d\n", sleep_time);
 
