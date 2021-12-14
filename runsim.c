@@ -83,7 +83,7 @@ int main(int argc, char* argv[]){
     }
 
 	if(strspn(argv[4], "0123456789") == strlen(argv[4])){
-		license_count = atoi(argv[3]);
+		license_count = atoi(argv[4]);
 		if( license_count <= 0 ){
 			perror("ERROR: runsim: n must be a number greating than zero\n");
 			usage();
