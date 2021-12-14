@@ -263,24 +263,24 @@ void terminate_processes(){
 	shmdt(shm);
 }
 /* unuti tokenizes input to make argument array */
-char** make_argv( char* str ){
+// char** make_argv( char* str ){
 	
-	char* substr;
-	char** _argv = malloc(10 * sizeof(char));
+// 	char* substr;
+// 	char** _argv = malloc(10 * sizeof(char));
 
-	substr = strtok(str, " ");
+// 	substr = strtok(str, " ");
 
-	int i = 0;
-	while( substr != NULL){
-		_argv[i] = malloc(20 * sizeof(char));
-		_argv[i] = substr;
-		substr = strtok(NULL, " ");
-		i++;
-	}
-	_argv[i] = NULL;
+// 	int i = 0;
+// 	while( substr != NULL){
+// 		_argv[i] = malloc(20 * sizeof(char));
+// 		_argv[i] = substr;
+// 		substr = strtok(NULL, " ");
+// 		i++;
+// 	}
+// 	_argv[i] = NULL;
 	
-	return _argv;
-}
+// 	return _argv;
+// }
 
 /* checks if any child processes are still running */
 int procs_remaining(pid_t procs[], int size)
